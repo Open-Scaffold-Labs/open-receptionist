@@ -25,11 +25,11 @@ let theme = loadSavedTheme(document.documentElement, storage);
 let toastTimer;
 
 const tabs = [
-  ['cockpit', '◫', 'Morning cockpit'],
-  ['voice-ai', '🎙', '24/7 AI voice receptionist'],
-  ['sms-textback', '💬', '10DLC SMS & text-back'],
-  ['direct-booking', '📅', 'Zero-commission booking'],
-  ['sip-carrier', '☎', 'Wholesale SIP & porting']
+  ['cockpit', '◫', 'Live Call Queue & Activity'],
+  ['voice-ai', '🎙', 'AI Voice Receptionist'],
+  ['sms-textback', '💬', 'Two-Way SMS Inbox'],
+  ['direct-booking', '📅', 'Appointments & Deposits'],
+  ['sip-carrier', '☎', 'Phone Numbers & Desk Phones']
 ];
 
 const badge = (text, type = 'neutral') => `<span class="badge ${type}">${e(text)}</span>`;
@@ -123,36 +123,34 @@ function selectPreset(presetId) {
 
 function renderCockpit() {
   const preset = receptionistPresets.find(p => p.id === state.activePresetId) || receptionistPresets[0];
-  const calc = calculateReceptionistSavings(state.calculator);
-  const activeLayer = architectureLayers.find(l => l.id === state.activeLayerId) || architectureLayers[0];
 
   return `
     ${pageTop(
-      'WHITE-LABEL WEAVE, PODIUM, RINGCENTRAL & OPENTABLE REPLACEMENT · @OPENSCAFFOLD/VOICE-RECEPTIONIST V1.0',
-      '24/7 AI Voice, Wholesale SIP Phone, 10DLC SMS & Direct Booking OS',
-      'Small businesses pay $500–$2,500/month across Weave, Podium, RingCentral, Smith.ai, and OpenTable/GolfNow cover tolls. Open Receptionist OS connects direct $1/mo wholesale SIP trunks and $0.004 carrier 10DLC SMS directly to @openscaffold/schedule, @openscaffold/crm, and @openscaffold/payment.',
-      button('Simulate Live Inbound Call & Booking', 'simulate-call', 'primary')
+      'FRONT-DESK COMMUNICATIONS & RECEPTION CONSOLE',
+      `${preset.business} — Live Call Queue, SMS & Bookings (${preset.phoneNumber})`,
+      'Monitor incoming phone calls, caller-ID customer profiles, two-way text conversations, and appointments scheduled today.',
+      button('Answer Incoming Call & Book Appointment', 'simulate-call', 'primary')
     )}
     <div class="kpi-grid">
       <article class="kpi-card">
-        <span class="eyebrow">HARD TELECOM &amp; MARKETPLACE SAVINGS</span>
-        <strong class="kpi-value">${money(calc.annualHardCostSavings, 0)}/yr</strong>
-        <p>Replaces ${e(preset.legacyStack)}</p>
+        <span class="eyebrow">ACTIVE BUSINESS PHONE LINE</span>
+        <strong class="kpi-value">${e(preset.phoneNumber)}</strong>
+        <p>${e(preset.business)} · All lines online</p>
       </article>
       <article class="kpi-card">
-        <span class="eyebrow">WHOLESALE CARRIER COST</span>
-        <strong class="kpi-value">${money(calc.wholesaleMonthlyTotal)}/mo</strong>
-        <p>$1.00/mo SIP DID · $0.004/SMS · $0.0035/min voice</p>
+        <span class="eyebrow">CALLS ANSWERED IN SESSION</span>
+        <strong class="kpi-value">${state.callLogs.length}</strong>
+        <p>${state.voiceCall.latencyMs}ms AI voice response · 0 missed calls</p>
       </article>
       <article class="kpi-card">
-        <span class="eyebrow">RECOVERED MISSED-CALL REVENUE</span>
-        <strong class="kpi-value">+${money(calc.recoveredAnnualRevenue, 0)}/yr</strong>
-        <p>${state.calculator.recoveredCallsPerMonth} missed calls/mo answered on 1st ring</p>
+        <span class="eyebrow">APPOINTMENTS BOOKED</span>
+        <strong class="kpi-value">${state.bookings.length}</strong>
+        <p>Synced to schedule with deposit links</p>
       </article>
       <article class="kpi-card">
-        <span class="eyebrow">MARKETPLACE COVER / LEAD TOLL</span>
-        <strong class="kpi-value">$0.00 / booking</strong>
-        <p>${state.bookings.length} direct bookings · ${state.smsThreads.length} 10DLC texts sent</p>
+        <span class="eyebrow">TWO-WAY SMS MESSAGES SENT</span>
+        <strong class="kpi-value">${state.smsThreads.length}</strong>
+        <p>Instant confirmations &amp; missed-call text-backs</p>
       </article>
     </div>
 
@@ -160,68 +158,61 @@ function renderCockpit() {
       <section class="card">
         <div class="card-head">
           <div>
-            <span class="eyebrow">5-LAYER TELECOM, AI VOICE &amp; DIRECT BOOKING STACK</span>
-            <h2>Why Weave, Podium &amp; RingCentral Cost 25× Wholesale</h2>
+            <span class="eyebrow">RECENT INBOUND CALLS &amp; SCREEN-POPS</span>
+            <h2>Live Call Activity</h2>
           </div>
-          ${badge('Wholesale Carrier Direct', 'positive')}
+          ${badge('1st-Ring Auto-Answer Active', 'positive')}
         </div>
-        <div class="layer-list">
-          ${architectureLayers.map(layer => `
-            <button type="button" class="layer-item ${layer.id === activeLayer.id ? 'active' : ''}" data-action="select-layer" data-layer="${layer.id}">
-              <div>
-                <strong>${e(layer.number)} · ${e(layer.title)}</strong>
-                <small>${e(layer.replacement)}</small>
-              </div>
-              ${badge(layer.savingMetric, 'positive')}
-            </button>
-          `).join('')}
-        </div>
-        <div class="callout" style="margin-top:1rem">
-          <strong>${e(activeLayer.number)}: ${e(activeLayer.title)}</strong>
-          <p>${e(activeLayer.summary)}</p>
-          <p><strong>Legacy Retail Toll:</strong> ${e(activeLayer.legacyTax)}<br><strong>Open Receptionist Cost:</strong> ${e(activeLayer.openReceptionistCost)}</p>
-        </div>
+        ${state.callLogs.length === 0 ? `
+          <div class="callout" style="margin-bottom:1rem">
+            <strong>Next Caller Ready on Line 1: ${e(state.voiceCall.callerName)} (${e(state.voiceCall.callerPhone)})</strong>
+            <p><strong>Customer Profile:</strong> ${e(state.voiceCall.callerBadge)}</p>
+            <p><strong>Caller Request:</strong> “${e(state.voiceCall.intent)}”</p>
+          </div>
+          ${button('Answer Call & Book Appointment Now', 'simulate-call', 'primary')}
+        ` : `
+          <table class="data-table">
+            <thead>
+              <tr><th>Call ID</th><th>Caller</th><th>Booked Action</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              ${state.callLogs.map(c => `
+                <tr>
+                  <td class="mono"><strong>${e(c.id)}</strong></td>
+                  <td><strong>${e(c.callerName)}</strong><br><small>${e(c.callerPhone)} · ${e(c.callerBadge)}</small></td>
+                  <td>${e(c.intent)}<br><small>Booking ${e(c.bookingId)}</small></td>
+                  <td>${badge(c.status, 'positive')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `}
       </section>
 
       <section class="card">
         <div class="card-head">
           <div>
-            <span class="eyebrow">INTERACTIVE TELECOM &amp; BOOKING TOLL CALCULATOR</span>
-            <h2>Compare Weave + Podium + RingCentral + OpenTable vs. Open Receptionist</h2>
+            <span class="eyebrow">ACTIVE RECEPTIONIST GREETING &amp; ROUTING</span>
+            <h2>Line Settings &amp; Quick Actions</h2>
           </div>
           ${badge(preset.vertical, 'info')}
         </div>
-        <div class="form-grid">
-          <label>Legacy Phone/SMS SaaS ($/mo)
-            <input type="number" min="0" step="50" value="${state.calculator.legacyMonthlyStack}" data-calc="legacyMonthlyStack">
-          </label>
-          <label>Monthly Cover / Lead Tolls ($/mo)
-            <input type="number" min="0" step="50" value="${state.calculator.marketplaceMonthlyTolls}" data-calc="marketplaceMonthlyTolls">
-          </label>
-          <label>Monthly Voice Minutes
-            <input type="number" min="100" step="100" value="${state.calculator.monthlyVoiceMinutes}" data-calc="monthlyVoiceMinutes">
-          </label>
-          <label>Monthly 10DLC SMS Messages
-            <input type="number" min="500" step="500" value="${state.calculator.monthlySmsMessages}" data-calc="monthlySmsMessages">
-          </label>
-          <label>Missed Calls Recovered / Month
-            <input type="number" min="0" step="2" value="${state.calculator.recoveredCallsPerMonth}" data-calc="recoveredCallsPerMonth">
-          </label>
-          <label>Average Booking / Ticket Value ($)
-            <input type="number" min="25" step="25" value="${state.calculator.avgBookingValue}" data-calc="avgBookingValue">
-          </label>
+        <div class="callout" style="margin-bottom:1rem">
+          <strong>Active Spoken Greeting:</strong>
+          <p>“${e(preset.greeting)}”</p>
         </div>
-        <table class="data-table" style="margin-top:1rem">
-          <thead>
-            <tr><th>Line Item</th><th>Legacy Stack</th><th>Open Receptionist OS</th></tr>
-          </thead>
+        <table class="data-table">
           <tbody>
-            <tr><td>Annual Phone, SMS, AI &amp; Cover Fees</td><td class="mono">${money(calc.legacyAnnualTotal)}/yr</td><td class="mono">${money(calc.openReceptionistAnnualTotal)}/yr</td></tr>
-            <tr><td>Wholesale Carrier Telecom (SIP + 10DLC + Voice AI)</td><td class="mono">Bundled at 25× markup</td><td class="mono">${money(calc.wholesaleMonthlyTotal)}/mo</td></tr>
-            <tr><td>Annual Hard-Dollar Cost Savings</td><td class="mono">—</td><td class="mono"><strong>+${money(calc.annualHardCostSavings)}/yr</strong></td></tr>
-            <tr><td>Recovered Missed-Call Booking Revenue (35% conv.)</td><td class="mono">$0.00 (Voicemail hang-ups)</td><td class="mono"><strong>+${money(calc.recoveredAnnualRevenue)}/yr</strong></td></tr>
+            <tr><td><strong>Primary Phone Number</strong></td><td class="mono">${e(preset.phoneNumber)}</td></tr>
+            <tr><td><strong>Default Appointment Deposit</strong></td><td class="mono">${money(preset.depositAmount)}</td></tr>
+            <tr><td><strong>Overflow &amp; After-Hours Rule</strong></td><td>Answer on 1st ring · Book directly to calendar · Text confirmation</td></tr>
           </tbody>
         </table>
+        <div style="margin-top:1rem;display:flex;gap:0.75rem;flex-wrap:wrap">
+          <a href="#tab-voice-ai" class="btn primary">Configure AI Voice Receptionist →</a>
+          <a href="#tab-sms-textback" class="btn">Open Two-Way SMS Inbox →</a>
+          <a href="#tab-direct-booking" class="btn">View Scheduled Bookings →</a>
+        </div>
       </section>
     </div>
   `;
@@ -231,7 +222,7 @@ function renderVoiceAi() {
   const preset = receptionistPresets.find(p => p.id === state.activePresetId) || receptionistPresets[0];
   return `
     ${pageTop(
-      `LAYER 2 · 24/7 SUB-400MS STREAMING AI VOICE RECEPTIONIST · ${preset.vertical.toUpperCase()}`,
+      `AI VOICE RECEPTIONIST & CALL ROUTING · ${preset.vertical.toUpperCase()}`,
       `${preset.business} · Live Caller-ID Screen-Pop & Schedule Negotiator`,
       e(preset.highlight),
       button('Answer Call, Book Slot & Text Deposit Link', 'simulate-call', 'primary')
@@ -302,9 +293,9 @@ function renderVoiceAi() {
 function renderSmsTextback() {
   return `
     ${pageTop(
-      'LAYER 3 · WHOLESALE $0.004 10DLC TWO-WAY SMS & <2-SECOND MISSED-CALL TEXT-BACK',
-      'Replace $500–$800/mo Weave & Podium Contracts with $0.004 Carrier SMS',
-      'Every appointment confirmation, 6-month hygiene/service recall, missed-call text-back, and Google review request goes out over direct Campaign Registry 10DLC carrier rails at $0.004 per message.'
+      'TWO-WAY SMS INBOX & AUTOMATED TEXT TEMPLATES',
+      'Missed-Call Text-Back, Appointment Confirmations & Recall Reminders',
+      'Send and receive customer text messages, dispatch instant missed-call text-backs, and send appointment deposit and confirmation links.'
     )}
     <div class="grid-2">
       ${smsTemplates.map(tpl => `
@@ -359,9 +350,9 @@ function renderSmsTextback() {
 function renderDirectBooking() {
   return `
     ${pageTop(
-      'LAYER 4 · ZERO-COMMISSION FIRST-PARTY SCHEDULE & PAY=MEMBER CRM LOOP',
-      'Eliminate OpenTable Per-Cover Fees, GolfNow Barter Rounds & Lead Tolls',
-      'Every voice call, SMS reply, and website booking writes directly into @openscaffold/schedule, issues a VIP Apple Wallet pass, and collects deposits via @openscaffold/payment at $0.15 flat ACH.',
+      'APPOINTMENTS, RESERVATIONS & DEPOSIT LINKS',
+      'Scheduled Bookings & Deposit Status',
+      'Review appointments and reservations booked by phone or SMS, verify deposit payments, and issue Apple/Google Wallet passes.',
       button('Create Direct Voice/SMS Booking', 'simulate-call', 'primary')
     )}
     <section class="card">
@@ -400,8 +391,8 @@ function renderSipCarrier() {
   const preset = receptionistPresets.find(p => p.id === state.activePresetId) || receptionistPresets[0];
   return `
     ${pageTop(
-      'LAYER 1 · WHOLESALE TIER-1 CARRIER SIP TRUNKING & NUMBER PORTING',
-      'Keep Your Existing Business Number — Cut the Phone Bill by 95%',
+      'PHONE NUMBERS, SIP DESK PHONES & CALL FORWARDING',
+      'Business Phone Numbers, Extensions & Device Credentials',
       `Port ${preset.phoneNumber} (${preset.business}) directly onto our Tier-1 wholesale carrier trunks (Telnyx / Bandwidth) with zero downtime, unlimited WebRTC browser/mobile extensions, and E911 + CNAM caller-ID registration.`
     )}
     <div class="grid-2">
