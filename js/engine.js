@@ -1,6 +1,6 @@
-import {clone, architectureLayers, receptionistPresets, smsTemplates} from './data.js';
+import {clone, architectureLayers, receptionistPresets, smsTemplates, outboundCampaignTemplates} from './data.js';
 
-export const STATE_KEY = 'open_receptionist.workspace.v1';
+export const STATE_KEY = 'openscaffold_voice.workspace.v1';
 export const money = (value, digits = 2) => new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
@@ -40,7 +40,16 @@ export function createState(presetId = 'dentist') {
       latencyMs: 320,
       autoSendSmsLink: true
     },
+    outboundCall: {
+      targetName: preset.outboundTargetName,
+      targetPhone: preset.outboundTargetPhone,
+      campaignType: preset.outboundCampaignType,
+      script: preset.outboundScript,
+      expectedOutcome: preset.outboundOutcome,
+      sendFollowupSms: true
+    },
     callLogs: [],
+    outboundLogs: [],
     smsThreads: [],
     bookings: [],
     audit: []
@@ -72,7 +81,6 @@ export function calculateReceptionistSavings(calc) {
 
   const recoveredCallsMo = Math.max(0, Number(calc.recoveredCallsPerMonth) || 0);
   const avgBooking = Math.max(0, Number(calc.avgBookingValue) || 0);
-  // Conservative 35% booking conversion on recovered missed calls
   const recoveredAnnualRevenue = Math.round(recoveredCallsMo * 0.35 * avgBooking * 12);
 
   return {
@@ -93,6 +101,7 @@ export function simulateInboundVoiceCall(state, now = new Date()) {
 
   const callRecord = {
     id: callId,
+    direction: 'INBOUND',
     business: preset.business,
     vertical: preset.vertical,
     callerName: state.voiceCall.callerName,
@@ -104,7 +113,7 @@ export function simulateInboundVoiceCall(state, now = new Date()) {
     wholesaleTelecomCost: 0.03,
     bookingId,
     depositAmount: Number(state.voiceCall.depositAmount) || preset.depositAmount,
-    status: 'Answered on 1st Ring · Slot Booked + SMS Deposit Link Sent',
+    status: 'Inbound Answered on 1st Ring · Slot Booked + SMS Sent',
     createdAt: now.toISOString()
   };
 
@@ -113,6 +122,7 @@ export function simulateInboundVoiceCall(state, now = new Date()) {
   const booking = {
     id: bookingId,
     callId,
+    direction: 'INBOUND',
     vertical: preset.vertical,
     business: preset.business,
     customerName: state.voiceCall.callerName,
@@ -121,7 +131,7 @@ export function simulateInboundVoiceCall(state, now = new Date()) {
     depositAmount: callRecord.depositAmount,
     marketplaceCommissionPaid: 0.00,
     openPaymentAchFee: 0.15,
-    status: 'Confirmed in @openscaffold/schedule · VIP Wallet Pass Issued',
+    status: 'Confirmed in @openscaffold/schedule · Digital Pass Issued',
     createdAt: now.toISOString()
   };
 
@@ -149,8 +159,70 @@ export function simulateInboundVoiceCall(state, now = new Date()) {
     });
   }
 
-  audit(state, `AI Voice Receptionist answered ${callId} (${state.voiceCall.callerName}) in ${state.voiceCall.latencyMs}ms, booked ${bookingId}, and sent 10DLC SMS confirmation`, now);
+  audit(state, `Inbound AI Voice answered ${callId} (${state.voiceCall.callerName}) in ${state.voiceCall.latencyMs}ms, booked ${bookingId}, and sent 10DLC SMS confirmation`, now);
   return {callRecord, booking};
+}
+
+export function simulateOutboundVoiceCall(state, now = new Date()) {
+  const preset = receptionistPresets.find(p => p.id === state.activePresetId) || receptionistPresets[0];
+  const outId = `OUT-${preset.id.toUpperCase()}-${String(state.outboundLogs.length + 1).padStart(3, '0')}`;
+  const bookingId = `BK-${preset.id.toUpperCase()}-${String(state.bookings.length + 1).padStart(3, '0')}`;
+
+  const outRecord = {
+    id: outId,
+    direction: 'OUTBOUND',
+    business: preset.business,
+    vertical: preset.vertical,
+    fromLine: preset.phoneNumber,
+    targetName: state.outboundCall.targetName,
+    targetPhone: state.outboundCall.targetPhone,
+    campaignType: state.outboundCall.campaignType,
+    script: state.outboundCall.script,
+    outcome: state.outboundCall.expectedOutcome,
+    durationSec: 54,
+    wholesaleTelecomCost: 0.02,
+    bookingId,
+    status: 'Outbound Call Completed · Action Synced to Schedule/CRM',
+    createdAt: now.toISOString()
+  };
+
+  state.outboundLogs.unshift(outRecord);
+
+  const booking = {
+    id: bookingId,
+    callId: outId,
+    direction: 'OUTBOUND',
+    vertical: preset.vertical,
+    business: preset.business,
+    customerName: state.outboundCall.targetName,
+    customerPhone: state.outboundCall.targetPhone,
+    summary: `${state.outboundCall.campaignType}: ${state.outboundCall.expectedOutcome}`,
+    depositAmount: preset.depositAmount,
+    marketplaceCommissionPaid: 0.00,
+    openPaymentAchFee: 0.15,
+    status: 'Confirmed via Outbound Voice Call · Synced to @openscaffold/schedule',
+    createdAt: now.toISOString()
+  };
+
+  state.bookings.unshift(booking);
+
+  if (state.outboundCall.sendFollowupSms) {
+    const smsId = `SMS-${preset.id.toUpperCase()}-${String(state.smsThreads.length + 1).padStart(3, '0')}`;
+    state.smsThreads.unshift({
+      id: smsId,
+      templateName: `Outbound Call Follow-Up (${state.outboundCall.campaignType})`,
+      to: state.outboundCall.targetPhone,
+      recipientName: state.outboundCall.targetName,
+      business: preset.business,
+      carrierCost: 0.004,
+      body: `Hi ${state.outboundCall.targetName}, following up on our call from ${preset.business}: ${state.outboundCall.expectedOutcome}.`,
+      status: 'Delivered via 10DLC ($0.004)',
+      createdAt: now.toISOString()
+    });
+  }
+
+  audit(state, `Outbound AI Voice dialed ${outId} to ${state.outboundCall.targetName} (${state.outboundCall.targetPhone}): ${state.outboundCall.expectedOutcome}`, now);
+  return {outRecord, booking};
 }
 
 export function triggerMissedCallTextBack(state, templateId = 'missed-call', now = new Date()) {

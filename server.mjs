@@ -10,14 +10,16 @@ export function createAppServer(){return createServer(async(req,res)=>{try{
   res.writeHead(200,{'Content-Type':'application/json; charset=utf-8','Access-Control-Allow-Origin':'*'});
   res.end(JSON.stringify({
    protocol:'openscaffold-mcp/v1',
-   service:'@openscaffold/voice-receptionist',
+   service:'@openscaffold/voice',
    version:'1.0.0',
+   direction:'bidirectional (inbound + outbound)',
    doors:['human-ui','agent-mcp'],
    tools:[
-    {name:'receptionist.handle_inbound_call',description:'Answer live SIP/WebRTC voice call with sub-400ms AI voice agent, look up caller in @openscaffold/crm, book slot in @openscaffold/schedule, and send SMS confirmation.'},
-    {name:'receptionist.missed_call_textback',description:'Trigger instant <2-second 10DLC SMS text-back with interactive booking/payment link when all lines are busy or caller hangs up.'},
-    {name:'receptionist.send_sms_campaign',description:'Send two-way 10DLC SMS appointment reminder, recall notice, or Google review request at $0.004 wholesale carrier rate.'},
-    {name:'receptionist.generate_pay_link',description:'Attach @openscaffold/payment $0.15 bank ACH or Apple Pay deposit link directly inside a voice/SMS booking thread.'}
+    {name:'voice.handle_inbound_call',description:'Answer inbound SIP/WebRTC voice call with sub-400ms AI voice agent, match caller in @openscaffold/crm, book or modify slot in @openscaffold/schedule, and send SMS confirmation.'},
+    {name:'voice.place_outbound_call',description:'Initiate an outbound AI or human-assisted voice call (appointment confirmation, 6-month recall, vendor/supplier check, crew dispatch, or past-due AR/assessment follow-up) and record outcome.'},
+    {name:'voice.run_outbound_campaign',description:'Execute a queued batch of outbound calls with automatic voicemail detection and SMS fallback.'},
+    {name:'voice.missed_call_textback',description:'Trigger instant <2-second 10DLC SMS text-back with interactive booking/payment link.'},
+    {name:'voice.send_sms_message',description:'Send two-way 10DLC SMS message, appointment confirmation, recall notice, or payment link.'}
    ]
   }));
   return;
@@ -28,5 +30,5 @@ export function createAppServer(){return createServer(async(req,res)=>{try{
  const data=await readFile(file);res.writeHead(200,{'Content-Type':types[extname(file)],'X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin'});res.end(req.method==='HEAD'?undefined:data);
  }catch{res.writeHead(404);res.end('Not found');}});}
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
- const server=createAppServer();server.listen(Number(process.env.PORT)||3000,'0.0.0.0',()=>console.log(`Open Receptionist OS: http://localhost:${server.address().port}`));
+ const server=createAppServer();server.listen(Number(process.env.PORT)||3000,'0.0.0.0',()=>console.log(`Open Scaffold Voice (@openscaffold/voice): http://localhost:${server.address().port}`));
 }
