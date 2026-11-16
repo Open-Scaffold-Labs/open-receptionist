@@ -13,3 +13,7 @@ Small businesses pay **`$4,200 to $18,000/year`** for fragmented phone, SMS, AI 
 2. **Wholesale 10DLC Two-Way SMS & Instant Missed-Call Text-Back (`$0.004/SMS`):** Replaces `$500–$800/mo` Weave/Podium bundles with direct carrier 10DLC messaging, 2-second missed-call text-back, and automated Google Review generation.
 3. **24/7 Sub-400ms Real-Time AI Voice Receptionist (`@openscaffold/vi` + `@open-scaffold-labs/ai`):** Answers inbound calls 24/7 in natural human voice, recognizes callers via `@openscaffold/crm` Screen-Pop, answers business-specific questions, and books directly into `@openscaffold/schedule`.
 4. **Zero-Commission Direct Booking & `Pay = Member` Private-Domain Loop:** Eliminates `$1.00–$1.50/cover` OpenTable tolls, GolfNow barter rounds, and Zocdoc/Thumbtack lead fees by converting every phone/SMS caller directly into a first-party appointment with an embedded `@openscaffold/payment` deposit link.
+
+## DEV-AUTH-01
+
+Phase 1 gap: this review app has no email magic-link or OTP sign-in and no `team_reviewer` demo tenant. `lib/teamAllowlist.mjs` holds the dev/review allowlist helper (including `osl-devauth-test@agentmail.to`) but stays off unless `OSL_DEV_AUTH_ENABLED=1`. That flag must not be set on a live production host. See `docs/security-decisions.md`.
