@@ -15,12 +15,12 @@ export const architectureLayers = [
   {
     id: 'layer-2',
     number: 'Layer 2',
-    title: 'Inbound 24/7 AI Voice Answering & Routing (@openscaffold/voice)',
+    title: 'Inbound 24/7 AI Voice Answering & Routing (@openscaffold/receptionist-demo)',
     replacement: 'Streaming Voice AI Connected Live to @openscaffold/schedule & CRM',
     legacyTax: 'Missed calls and voicemail hang-ups',
     openReceptionistCost: 'Sub-400ms streaming voice AI',
     summary: 'Answers inbound calls on the first ring, greets callers using @openscaffold/crm caller-ID lookup, answers business FAQs, and books or reschedules slots in @openscaffold/schedule.',
-    modules: ['@openscaffold/voice Inbound Engine', 'CRM Caller-ID Screen-Pop', 'Live Schedule Slot Negotiator'],
+    modules: ['@openscaffold/receptionist-demo Inbound Engine', 'CRM Caller-ID Screen-Pop', 'Live Schedule Slot Negotiator'],
     savingMetric: '1st-ring inbound answering'
   },
   {
@@ -31,7 +31,7 @@ export const architectureLayers = [
     legacyTax: 'Hours of staff phone tag for confirmations, recalls, and vendor/crew coordination',
     openReceptionistCost: 'Automated single-call & batch outbound voice workflows',
     summary: 'Places outbound voice calls for appointment confirmations, 6-month hygiene/service recalls, waitlist backfill, crew/vendor dispatch, and past-due invoice or assessment follow-ups.',
-    modules: ['@openscaffold/voice Outbound Dialer', 'Live Transcript & Outcome Tagging', 'Voicemail Detection + SMS Fallback'],
+    modules: ['@openscaffold/receptionist-demo Outbound Dialer', 'Live Transcript & Outcome Tagging', 'Voicemail Detection + SMS Fallback'],
     savingMetric: 'Proactive outbound voice automation'
   },
   {

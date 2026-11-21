@@ -3,7 +3,7 @@ export default function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.status(200).send(JSON.stringify({
     protocol: 'openscaffold-mcp/v1',
-    service: '@openscaffold/voice',
+    service: '@openscaffold/receptionist-demo',
     version: '1.0.0',
     direction: 'bidirectional (inbound + outbound)',
     doors: ['human-ui', 'agent-mcp'],
