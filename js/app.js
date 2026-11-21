@@ -116,7 +116,7 @@ function selectPreset(presetId) {
   state.outboundCall.campaignType = preset.outboundCampaignType;
   state.outboundCall.script = preset.outboundScript;
   state.outboundCall.expectedOutcome = preset.outboundOutcome;
-  audit(state, `Switched active Open Scaffold Voice preset to ${preset.vertical} (${preset.business})`);
+  audit(state, `Switched active Open Receptionist demo preset to ${preset.vertical} (${preset.business})`);
   persist();
   render();
   notify(`Loaded ${preset.vertical} bidirectional voice profile: ${preset.business}`);
@@ -509,7 +509,7 @@ function renderSipCarrier() {
             <tr><td><strong>SIP Trunk Carrier</strong></td><td>Telnyx / Bandwidth Tier-1 Redundant SIP</td></tr>
             <tr><td><strong>Outbound Caller ID (STIR/SHAKEN)</strong></td><td>Attestation Level A (Verified Business Name Display)</td></tr>
             <tr><td><strong>Desk Phone &amp; Softphone Endpoints</strong></td><td>Browser WebRTC, iOS/iPadOS App, Yealink/Poly SIP TLS</td></tr>
-            <tr><td><strong>Two-Way MCP Agent Endpoint</strong></td><td class="mono">GET/POST /api/agent/mcp (@openscaffold/voice)</td></tr>
+            <tr><td><strong>Two-Way MCP Agent Endpoint</strong></td><td class="mono">GET/POST /api/agent/mcp (@openscaffold/receptionist-demo)</td></tr>
           </tbody>
         </table>
       </section>

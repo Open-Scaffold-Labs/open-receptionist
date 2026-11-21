@@ -10,7 +10,7 @@ export function createAppServer(){return createServer(async(req,res)=>{try{
   res.writeHead(200,{'Content-Type':'application/json; charset=utf-8','Access-Control-Allow-Origin':'*'});
   res.end(JSON.stringify({
    protocol:'openscaffold-mcp/v1',
-   service:'@openscaffold/voice',
+   service:'@openscaffold/receptionist-demo',
    version:'1.0.0',
    direction:'bidirectional (inbound + outbound)',
    doors:['human-ui','agent-mcp'],
@@ -30,5 +30,5 @@ export function createAppServer(){return createServer(async(req,res)=>{try{
  const data=await readFile(file);res.writeHead(200,{'Content-Type':types[extname(file)],'X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin'});res.end(req.method==='HEAD'?undefined:data);
  }catch{res.writeHead(404);res.end('Not found');}});}
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
- const server=createAppServer();server.listen(Number(process.env.PORT)||3000,'0.0.0.0',()=>console.log(`Open Scaffold Voice (@openscaffold/voice): http://localhost:${server.address().port}`));
+ const server=createAppServer();server.listen(Number(process.env.PORT)||3000,'0.0.0.0',()=>console.log(`Open Receptionist demo (@openscaffold/receptionist-demo): http://localhost:${server.address().port}`));
 }

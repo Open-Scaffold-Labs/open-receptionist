@@ -12,7 +12,7 @@ import {
 import {architectureLayers, receptionistPresets, smsTemplates, outboundCampaignTemplates} from '../js/data.js';
 import {THEMES, listThemes} from '../js/theme.js';
 
-test('1. architectureLayers defines all 5 layers of Open Scaffold Voice (@openscaffold/voice)', () => {
+test('1. architectureLayers defines all 5 layers of Open Receptionist demo (@openscaffold/receptionist-demo)', () => {
   assert.equal(architectureLayers.length, 5);
   assert.ok(architectureLayers[0].title.includes('SIP'));
   assert.ok(architectureLayers[1].title.includes('Inbound'));
